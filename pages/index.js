@@ -1,13 +1,19 @@
 import fs from 'fs/promises'
 import path from 'path'
 
-function HomePage(props) {
+import Link from 'next/link'
+
+export default function HomePage(props) {
 
   const { products } = props
 
   return (
     <ul>
-      {products.map(item => <li key={item.id}>{item.title}</li>)}
+      {products.map(item => (
+        <li key={item.id}>
+          <Link href={`/${item.id}`}>{item.title}</Link>
+        </li>
+      ))}
     </ul>
   );
 }
@@ -37,4 +43,3 @@ export async function getStaticProps() {
   }
 }
 
-export default HomePage;
