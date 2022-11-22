@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react'
 import useSWR from 'swr'
 
-export default function lastSalesPage() {
+export default function lastSalesPage(props) {
 
-    const [sales, setSales] = useState()
+    const [sales, setSales] = useState(props.sales)
 
     const { data, error } = useSWR(
         'https://next-course-data-fetchin-aa929-default-rtdb.firebaseio.com/sales.json',
@@ -11,16 +11,18 @@ export default function lastSalesPage() {
     )
 
     useEffect( () => {
-        const transformedSales = []
+        if (data) {
+            const transformedSales = []
 
-        for (let key in data) {
-            transformedSales.push({
-                id: key,
-                ...data[key]
-            })
+            for (let key in data) {
+                transformedSales.push({
+                    id: key,
+                    ...data[key]
+                })
+            }
+
+            setSales(transformedSales)
         }
-
-        setSales(transformedSales)
     }, [data])
 
 
@@ -28,7 +30,7 @@ export default function lastSalesPage() {
         return <p>Failed to load!</p>
     }
 
-    if (!data || !sales) {
+    if (!data && !sales) {
         return <p>Loading...</p>
     }
 
@@ -42,4 +44,26 @@ export default function lastSalesPage() {
             ))}
         </ul>
     )
+}
+
+export async function getStaticProps() {
+    const response = await fetch('https://next-course-data-fetchin-aa929-default-rtdb.firebaseio.com/sales.json')
+    const data = await response.json()
+    
+    const transformedSales = []
+
+    for (let key in data) {
+        transformedSales.push({
+            id: key,
+            ...data[key]
+        })
+    }
+
+    return {
+        props: {
+            sales: transformedSales,
+        },
+        revalidate: 10
+    }
+
 }
