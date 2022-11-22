@@ -1,40 +1,56 @@
-import { useEffect, useState } from "react"
+import { useEffect, useState } from 'react'
+import useSWR from 'swr'
 
 export default function lastSalesPage() {
 
-    const [sales, setSales] = useState([])
-    const [isLoading, setIsLoading] = useState(false)
+    // const [sales, setSales] = useState()
 
-    useEffect( () => {
-        setIsLoading(true)
-        fetch('https://next-course-data-fetchin-aa929-default-rtdb.firebaseio.com/sales.json')
-            .then(res => res.json())
-            .then(data => {
-                const transformedSales = []
+    const fetcher = (url) => fetch(url)
+        .then(res => res.json())
+        .then(data => {
+            const transformedSales = []
 
-                for (let key in data) {
-                    transformedSales.push({
-                        id: key,
-                        ...data[key]
-                    })
-                }
+            for (let key in data) {
+                transformedSales.push({
+                    id: key,
+                    ...data[key]
+                })
+            }
 
-                setSales(transformedSales)
-                setIsLoading(false)
-            })
-    }, [])
+            return transformedSales
+        })
 
-    if (isLoading) {
+    const { data, error } = useSWR(
+        'https://next-course-data-fetchin-aa929-default-rtdb.firebaseio.com/sales.json', 
+        fetcher 
+    )
+
+    // useEffect( () => {
+    //     const transformedSales = []
+
+    //     for (let key in data) {
+    //         transformedSales.push({
+    //             id: key,
+    //             ...data[key]
+    //         })
+    //     }
+
+    //     setSales(transformedSales)
+    // }, [data])
+
+
+    if (error) {
+        return <p>Failed to load!</p>
+    }
+
+    if (!data) {
         return <p>Loading...</p>
     }
 
-    if (sales.length === 0) {
-        return <p>No data yet...</p>
-    }
 
     return (
         <ul>
-            {sales.map(sale => (
+            {data.map(sale => (
                 <li key={sale.id}>
                     {sale.username} - ${sale.volume}
                 </li>
